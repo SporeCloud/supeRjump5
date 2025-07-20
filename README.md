@@ -1,6 +1,6 @@
 # supeRjump5
 
-A simple data package containing player stats and match data from the Superjump 5 Splatoon 3 major.
+A simple data package containing player stats and match data from the Alpha bracket of the Superjump 5 Splatoon 3 major.
 
 The data was sourced from the [publicly available Google Sheet](https://docs.google.com/spreadsheets/d/1i4IdNALs3fnsA4-2HSsyBQOrHCTBPNiSGzRzfnKdocE/edit?gid=617469261#gid=617469261), which was published by Broadcasting eSports Every Play.
 Shoutouts to the staff that worked on this sheet:
@@ -12,6 +12,8 @@ Shoutouts to the staff that worked on this sheet:
 
 
 ## Installation
+
+Installation is done via the devtools package:
 
 ```R
 devtools::install_github("SporeCloud/supeRjump5")
