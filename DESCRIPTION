@@ -1,0 +1,14 @@
+Package: supeRjump5
+Title: SuperJump 5 Alpha Bracket Data (One Line, Title Case)
+Version: 1.0.0
+Authors@R: 
+    person("Spore", "", , "splatsporecloud@gmail.com", role = c("aut", "cre"))
+Maintainer: SporeCloud <splatsporecloud@gmail.com>
+Description: Simple R package that contains data from the Alpha Bracket of SuperJump 5. This is broken down into two tables; one for each match's metadata and another for the raw stats.\nOriginal data was sourced by Inkling Performance Labs and published by Broadcasting eSports Every Play.
+License: CC0
+Encoding: UTF-8
+Depends:
+    R (>= 3.5)
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+LazyData: true

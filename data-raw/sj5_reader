@@ -1,0 +1,87 @@
+require(googlesheets4)
+require(dplyr)
+require(tidyr)
+require(devtools)
+
+unlist_df <- function(x) {
+    if (is.list(x)) {
+        return(unlist(x))
+    }
+    else {
+        return(x)
+    }
+}
+
+#todo: fix metadata to show game winners
+sj5_fetcher <- function(url) {
+    properties <- googlesheets4::sheet_properties(url)
+    names <- properties$name[5:15]
+    googlesheets4::gs4_deauth()
+    all_sheets <- lapply(names,function(x) {
+        #fetch data and fix colnames
+        data <- googlesheets4::read_sheet(ss = url, sheet = x, col_names = FALSE, range = "A:Q")
+        colnames(data) <- gsub("...","",colnames(data))
+        #metadata. this is data about the matches themselves
+        #e.g. map, mode, winner/loser
+        metadata <- data %>% dplyr::select("3", "13":"17")
+        metadata_rows <- seq(1,500,11)
+        metadata <- dplyr::filter(metadata, dplyr::row_number() %in% metadata_rows)
+        metadata <- metadata %>% dplyr::mutate(
+            dplyr::across(
+                dplyr::where(is.list), unlist)
+                )
+        colnames(metadata) <- c("Winner","Alpha","Bravo","Mode","Map","Time")
+        print(head(metadata))
+        metadata$Loser <- apply(metadata, 1, function (x) {
+            if (x[[3]] == x[[1]]) {
+                return(x[[2]])
+            } else {
+                return(x[[3]])
+            }
+        })
+        metadata$`Round` <- c(x)
+
+        #the data itself. this contains the actual stats
+        data <- data[-1, ]
+        data <- dplyr::select(tidyr::drop_na(data, "1"),
+        "1":"6", "8", "13", "15"
+        )
+        #unlisting of column names in case they are length 1 lists
+        column_names <- lapply(data[1,], unlist_df)
+        #fix for one specific df's columns + filter
+        colnames(data) <- gsub("Aura","Weapon",column_names)
+        data <- data[-1,]
+        data <- dplyr::filter(data, dplyr::row_number() %% 9 > 0)
+        for (col in colnames(data)) {
+            data[[col]] <- unlist(lapply(data[[col]], function(x) ifelse(is.null(x), NA, x)))
+        }
+
+        return(list(metadata, data))
+    })
+    #create lists to concatenate dfs together
+    all_metadata <- list()
+    all_matchdata <- list()
+    for (i in all_sheets) {
+        all_metadata <- append(all_metadata, list(i[[1]]))
+        all_matchdata <- append(all_matchdata, list(i[[2]]))
+    }
+    matchdata <- dplyr::bind_rows(all_matchdata)
+    metadata <- dplyr::bind_rows(all_metadata)
+    #adding match ids to join data and metadata
+    metadata$id <- 1:nrow(metadata)
+    metadata$id <- metadata$id - 1
+    metadata <- metadata[,c(9,8,2,3,1,7,4,5,6)]
+    metadata$Version <- "10.0.1"
+    matchdata$id <- 1:nrow(matchdata)
+    matchdata$id <- (matchdata$id - 1) %/% 8
+
+    return(list(metadata, matchdata))
+}
+
+x <- sj5_fetcher("https://docs.google.com/spreadsheets/d/1i4IdNALs3fnsA4-2HSsyBQOrHCTBPNiSGzRzfnKdocE/edit?gid=617469261#gid=617469261s://docs.google.com/spreadsheets/d/1i4IdNALs3fnsA4-2HSsyBQOrHCTBPNiSGzRzfnKdocE/edit?gid=617469261#gid=617469261")
+
+sj5_matchdata <- x[[2]]
+sj5_metadata <- x[[1]]
+
+usethis::use_data(sj5_matchdata, overwrite = TRUE)
+usethis::use_data(sj5_metadata, overwrite = TRUE)
