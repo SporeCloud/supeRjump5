@@ -12,3 +12,5 @@ Depends:
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 LazyData: true
+URL: https://github.com/SporeCloud/supeRjump5
+BugReports: https://github.com/SporeCloud/supeRjump5/issues
